@@ -1,0 +1,17 @@
+# VS Code
+.vscode/
+
+# Cache CodeIgniter
+application/cache/*
+!application/cache/index.html
+
+# Log CodeIgniter
+application/logs/*
+!application/logs/index.html
+
+# Environment
+.env
+
+# File sistem
+Thumbs.db
+.DS_Store

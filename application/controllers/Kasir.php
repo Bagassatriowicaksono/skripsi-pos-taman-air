@@ -36,118 +36,6 @@ class Kasir extends CI_Controller
         $this->load->view('layout/footer', $data);
     }
 
-    // public function store()
-    // {
-    //     $no_bon = $this->input->post('no_bon', true);
-
-    //     $cekNoBon = $this->db->query('SELECT no_bon FROM transaksi WHERE no_bon = ?', [$no_bon]);
-    //     if ($cekNoBon->num_rows() > 0) {
-    //         $no_bon = generateNumber('transaksi', 'no_bon');
-    //     }
-
-    //     $cekNoUrut = $this->db->query("SELECT count(*) as jml FROM transaksi WHERE date = ?", [date('Y-m-d')])->row();
-    //     $noUrut = $cekNoUrut->jml + 1;
-
-    //     $voucher    = $this->input->post('voucher', true);
-    //     $grandtotal = $this->input->post('grandtotal', true);
-    //     $kembali    = $this->input->post('kembaliBayar', true);
-    //     $dibayar    = $this->input->post('dibayar', true);
-
-    //     if (!empty($grandtotal)) {
-    //         $grandtotal = preg_replace('/[^a-zA-Z0-9\']/', '', $grandtotal);
-    //     } else {
-    //         $grandtotal = 0;
-    //     }
-
-    //     if (!empty($voucher)) {
-    //         $voucher = preg_replace('/[^a-zA-Z0-9\']/', '', $voucher);
-    //     } else {
-    //         $voucher = 0;
-    //     }
-
-    //     if (!empty($kembali)) {
-    //         $kembali = preg_replace('/[^a-zA-Z0-9\']/', '', $kembali);
-    //     } else {
-    //         $kembali = 0;
-    //     }
-
-    //     if (!empty($dibayar)) {
-    //         $dibayar = preg_replace('/[^a-zA-Z0-9\']/', '', $dibayar);
-    //     } else {
-    //         $dibayar = 0;
-    //     }
-
-    //     if (in_array(
-    //         xss_protect($this->input->post("status", true)),
-    //         ['Tunai', 'Non tunai']
-    //     )) {
-    //         if ($dibayar < $grandtotal) {
-    //             echo 'Kurang';
-    //             exit;
-    //         }
-    //     }
-
-    //     $hasil_cart = $this->db->get_where('keranjang', ['login_id' => $this->session->userdata('ses_id')])->result_array();
-    //     $total_qty = 0;
-    //     $grandmodal = 0;
-    //     foreach ($hasil_cart as $isi) {
-    //         $kode_menu = $isi['kode_menu'];
-    //         $qty = $isi['qty'];
-    //         $total_qty += $qty;
-
-    //         $data_jual[] = array(
-    //             'no_bon'        => $no_bon,
-    //             'kode_menu'     => $kode_menu,
-    //             'nama_menu'     => $isi['nama'],
-    //             'kategori'      => $isi['kategori'],
-    //             'qty'           => $qty,
-    //             'harga_beli'    => $isi['harga_beli'],
-    //             'harga_jual'    => $isi['harga_jual'],
-    //             'keterangan'    => $isi['keterangan'],
-    //             'created_at'    => date('Y-m-d H:i:s'),
-    //             'date'          => date('Y-m-d'),
-    //             'periode'       => date('Y-m'),
-    //             'year'          => date('Y'),
-    //         );
-    //         $grandmodal += $isi['harga_beli'] * $qty;
-    //     }
-
-    //     // insert penjualan
-    //     $total_array = count($data_jual);
-    //     if ($total_array != 0) {
-    //         $this->db->insert_batch('transaksi_produk', $data_jual);
-    //     }
-
-    //     // insert transaksi
-    //     $data_trx = array(
-    //         'no_bon'        => $no_bon,
-    //         'urut'          => $noUrut,
-    //         'kasir_id'      => $this->session->userdata('ses_id'),
-    //         'customer_id'   => xss_protect($this->input->post("customer_id", true)),
-    //         'atas_nama'     => xss_protect($this->input->post("atas_nama", true)),
-    //         'pesanan'       => xss_protect($this->input->post("pesanan", true)),
-    //         'status'        => xss_protect($this->input->post("status", true)),
-    //         'diskon'        => xss_protect($this->input->post("diskon", true)),
-    //         'pajak'         => xss_protect($this->input->post("pajak", true)),
-    //         'voucher'       => $voucher,
-    //         'grandmodal'    => $grandmodal,
-    //         'grandtotal'    => $grandtotal,
-    //         'total_qty'     => $total_qty,
-    //         'dibayar'       => $dibayar,
-    //         'created_at'    => date('Y-m-d H:i:s'),
-    //         'date'          => date('Y-m-d'),
-    //         'periode'       => date('Y-m'),
-    //         'year'          => date('Y'),
-    //     );
-    //     $this->db->insert('transaksi', $data_trx);
-
-    //     $this->db->where('login_id', $this->session->userdata('ses_id'));
-    //     $this->db->delete('keranjang');
-
-    //     echo $no_bon;
-    // }
-
-
     public function store()
     {
         $no_bon = $this->input->post('no_bon', true);
@@ -257,7 +145,51 @@ class Kasir extends CI_Controller
         echo $no_bon;
     }
 
+public function snapToken()
+{
+    $this->load->library('midtrans');
 
+    // Order ID unik untuk testing
+    $order_id = 'TRX-' . date('YmdHis') . '-' . rand(100,999);
+
+    $customer = $this->input->post('atas_nama');
+
+    $grandtotal = $this->input->post('grandtotal');
+
+    if (empty($grandtotal)) {
+        $grandtotal = 0;
+    }
+
+    $gross_amount = (int) preg_replace('/[^0-9]/', '', $grandtotal);
+
+    $params = [
+        'transaction_details' => [
+            'order_id' => $order_id,
+            'gross_amount' => $gross_amount
+        ],
+        'customer_details' => [
+            'first_name' => $customer
+        ]
+    ];
+
+    try {
+
+        $snapToken = $this->midtrans->getSnapToken($params);
+
+        echo json_encode([
+            'status' => true,
+            'token' => $snapToken
+        ]);
+
+    } catch (Exception $e) {
+
+        echo json_encode([
+            'status' => false,
+            'message' => $e->getMessage()
+        ]);
+
+    }
+}
 
     public function show()
     {

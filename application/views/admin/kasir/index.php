@@ -462,7 +462,7 @@
                                     <tr>
                                         <th>Pesanan</th>
                                         <td>
-                                            <select class="form-control" required name="Jenis Pesanan" id="Jenis Pesanan">
+                                            <select class="form-control" required name="Pesanan" id="Pesanan">
                                                 <option value="" disabled selected> - Jenis Pesanan -</option>
                                                 <option selected>Dine in</option>
                                                 <option>Take away</option>
@@ -564,6 +564,11 @@
                              <i class="fa fa-check-circle mr-2"></i>
                              Simpan Transaksi
                             </button>
+
+                            <button type="button" class="btn btn-info" id="bayarMidtrans">
+                             Bayar Midtrans
+                            </button>
+                            
                         </div>
                     </form>
 
@@ -961,6 +966,67 @@ $(document).ready(function() {
         hitungDiskonPajakTotal();
     });
 });
+$("#bayarMidtrans").click(function(){
+
+    console.log("Tombol Bayar Midtrans diklik");
+
+    $.ajax({
+
+        url:"<?= base_url('kasir/snapToken');?>",
+
+        type:"POST",
+
+        data:{
+            order_id:$("#no_bon").val(),
+            grandtotal:$("#GrandTotal").val(),
+            atas_nama:$("#atas_nama").val()
+        },
+
+        dataType:"json",
+
+        success:function(res){
+
+            console.log("TOKEN BARU");
+
+         console.log(res);
+
+
+            if(res.status){
+
+                console.log("Memanggil snap.pay");
+
+                snap.pay(res.token,{
+                    onSuccess:function(result){
+                        console.log("SUCCESS",result);
+                    },
+                    onPending:function(result){
+                        console.log("PENDING",result);
+                    },
+                    onError:function(result){
+                        console.log("ERROR",result);
+                    },
+                    onClose:function(){
+                        console.log("POPUP DITUTUP");
+                    }
+                });
+
+            }else{
+
+                console.log(res.message);
+
+            }
+
+        },
+
+        error:function(xhr){
+
+            console.log(xhr.responseText);
+
+        }
+
+    });
+
+});
 
 function bayarOrder() {
     var hargaTot = $("#GrandTotal").val();
@@ -1001,6 +1067,7 @@ function hitungDiskonPajakTotal(){
     }
 
     $("#GrandTotal").val(formatRupiah(Math.round(grandTotal),''));
+    console.log("Function hitungDiskonPajakTotal berhasil dimuat");
 
 }
 </script>
@@ -1008,15 +1075,13 @@ function hitungDiskonPajakTotal(){
 <script>
 /* Fungsi formatRupiah */
 function formatRupiah(angka, prefix) {
+
     if (typeof angka === 'string') {
-        // If the input is a string, remove non-digit characters
         angka = angka.replace(/[^,\d]/g, '');
     } else if (typeof angka === 'number') {
-        // If the input is a number, convert it to string
         angka = angka.toString();
     } else {
-        // If the input is neither a string nor a number, return early
-        return 0;
+        return '0';
     }
 
     var split = angka.split(','),
@@ -1024,13 +1089,21 @@ function formatRupiah(angka, prefix) {
         rupiah = split[0].substr(0, sisa),
         ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
-    // tambahkan titik jika yang di input sudah menjadi angka ribuan
     if (ribuan) {
-        separator = sisa ? '.' : '';
+        var separator = sisa ? '.' : '';
         rupiah += separator + ribuan.join('.');
     }
 
-    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
-    return prefix == undefined ? rupiah : (rupiah ? '' + rupiah : '');
+    rupiah = split[1] !== undefined
+        ? rupiah + ',' + split[1]
+        : rupiah;
+
+    return prefix === undefined ? rupiah : rupiah;
 }
+</script>
+
+<script
+    type="text/javascript"
+    src="https://app.sandbox.midtrans.com/snap/snap.js"
+    data-client-key="<?= $this->config->item('client_key','midtrans'); ?>">
 </script>

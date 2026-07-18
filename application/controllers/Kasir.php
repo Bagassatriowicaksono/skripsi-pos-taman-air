@@ -77,15 +77,14 @@ class Kasir extends CI_Controller
             $dibayar = 0;
         }
 
-        if (in_array(
-            xss_protect($this->input->post("metode", true)),
-            ['Tunai', 'Non tunai']
-        )) {
-            if ($dibayar < $grandtotal) {
-                echo 'Kurang';
-                exit;
-            }
-        }
+        $metode = xss_protect($this->input->post("metode", true));
+
+        if ($metode == 'Tunai') {
+        if ($dibayar < $grandtotal) {
+        echo 'Kurang';
+        exit;
+    }
+}
 
         $hasil_cart = $this->db->get_where('keranjang', ['login_id' => $this->session->userdata('ses_id')])->result_array();
         $total_qty = 0;

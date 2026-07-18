@@ -565,9 +565,13 @@
                              Simpan Transaksi
                             </button>
 
-                            <button type="button" class="btn btn-info" id="bayarMidtrans">
-                             Bayar Midtrans
-                            </button>
+                            <!--
+<button type="button"
+        class="btn btn-info"
+        id="bayarMidtrans">
+    Bayar Midtrans
+</button>
+-->
                             
                         </div>
                     </form>
@@ -826,83 +830,169 @@ $('#example2 tbody').on('click', '.cek_pilih', function(e) {
 });
 </script>
 <script>
-$(document).ready(function() {
-    $("#AddKasir").submit(function(e) {
-        e.preventDefault();
+$(document).ready(function () {
+
+    function simpanTransaksi(form){
+
         $.ajax({
             url: "<?= base_url('kasir/store');?>",
-            type: 'POST',
-            data: new FormData(this),
+            type: "POST",
+            data: new FormData(form),
             processData: false,
             contentType: false,
             cache: false,
-            async: false,
-            beforeSend: function() {
-                $('#prosesTransaksi').attr('disabled', true);
-                $('#prosesTransaksi').addClass('btn-success').removeClass('btn-primary');
+            beforeSend:function(){
+
+                $("#prosesTransaksi").prop("disabled",true);
+
                 $("#prosesTransaksi").html(
-                    '<i class="fas fa-circle-notch fa-spin"></i> Loading');
+                    '<i class="fas fa-circle-notch fa-spin"></i> Loading'
+                );
+
             },
-            success: function(result) {
-                if (result == 'Kurang') {
+            success:function(result){
+
+                if(result=="Kurang"){
+
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Pembayaran Anda Kurang Dari Total Bayar !',
-                    })
-                    // alert('Pembayaran Anda Kurang Dari Total Bayar !');
-                    $('#prosesTransaksi').attr('disabled', false);
-                    $('#prosesTransaksi').addClass('btn-primary').removeClass(
-                        'btn-success');
-                    $("#prosesTransaksi").html(
-                        '<i class="fa fa-save"></i> Simpan Transaksi');
-                } else {
-                    $('#prosesTransaksi').attr('disabled', false);
-                    $('#prosesTransaksi').addClass('btn-success').removeClass(
-                        'btn-success');
-                    $("#prosesTransaksi").html(
-                        'Simpan Transaksi');
-                    $('#AddKasir')[0].reset();
-                    $('#example1').DataTable().ajax.reload();
-                    $('#cart_keranjang').load('<?= base_url('kasir/cart');?>');
-                    $('#cart_modal').load('<?= base_url('kasir/cart_table');?>');
-                    var id = result;
-                    var url_add = '<?= base_url('kasir/show?id=');?>' + id;
-                    $.ajax({
-                        url: url_add,
-                        timeout: 30000,
-                        success: function(html) {
-                            $('.modal').css('overflow-y', 'auto');
-                            $('#cetak-edit').modal('show');
-                            $("#edit-content").html(html);
-                        },
-                        'error': function(xmlhttprequest, textstatus, message) {
-                            if (textstatus === "timeout") {
-                                alert("request timeout");
-                            } else {
-                                alert("request timeout");
-                            }
-                        }
+                        icon:'error',
+                        title:'Oops...',
+                        text:'Pembayaran Anda Kurang Dari Total Bayar!'
                     });
+
+                    $("#prosesTransaksi").prop("disabled",false);
+
+                    $("#prosesTransaksi").html(
+                        '<i class="fa fa-save"></i> Simpan Transaksi'
+                    );
+
+                    return;
                 }
 
-            },
-            error: function(xmlhttprequest, textstatus, message) {
-                if (textstatus === "timeout") {
-                    alert("request timeout");
-                } else {
-                    alert("request timeout");
-                }
+                $("#prosesTransaksi").prop("disabled",false);
 
-                $('#prosesTransaksi').attr('disabled', false);
-                $('#prosesTransaksi').addClass('btn-primary').removeClass('btn-success');
-                $("#prosesTransaksi").html('Save');
-                // $('#AddKasir')[0].reset();
+                $("#prosesTransaksi").html(
+                    '<i class="fa fa-save"></i> Simpan Transaksi'
+                );
+
+                $("#AddKasir")[0].reset();
+
+                $("#example1").DataTable().ajax.reload();
+
+                $("#cart_keranjang").load("<?= base_url('kasir/cart');?>");
+
+                $("#cart_modal").load("<?= base_url('kasir/cart_table');?>");
+
+                var url_add =
+                    "<?= base_url('kasir/show?id=');?>"+result;
+
+                $.ajax({
+
+                    url:url_add,
+
+                    success:function(html){
+
+                        $('.modal').css('overflow-y','auto');
+
+                        $("#cetak-edit").modal("show");
+
+                        $("#edit-content").html(html);
+
+                    }
+
+                });
+
             }
+
         });
+
+    }
+
+
+    $("#AddKasir").submit(function(e){
+
+        e.preventDefault();
+
+        var metode=$("#metode").val();
+
+        if(metode=="Non tunai"){
+
+            $.ajax({
+
+                url:"<?= base_url('kasir/snapToken');?>",
+
+                type:"POST",
+
+                data:{
+                    order_id:$("#no_bon").val(),
+                    grandtotal:$("#GrandTotal").val(),
+                    atas_nama:$("#atas_nama").val()
+                },
+
+                dataType:"json",
+
+                success:function(res){
+
+                    if(res.status){
+
+                        snap.pay(res.token,{
+
+                            onSuccess:function(result){
+
+                                simpanTransaksi($("#AddKasir")[0]);
+
+                            },
+
+                            onPending:function(result){
+
+                                console.log(result);
+
+                            },
+
+                            onError:function(result){
+
+                                console.log(result);
+
+                            },
+
+                            onClose:function(){
+
+                                console.log("Popup ditutup");
+
+                            }
+
+                        });
+
+                    }else{
+
+                        Swal.fire({
+
+                            icon:"error",
+
+                            title:"Midtrans",
+
+                            text:res.message
+
+                        });
+
+                    }
+
+                }
+
+            });
+
+            return;
+
+        }
+
+        simpanTransaksi(this);
+
+         });
+
     });
-});
+
 </script>
+
 <script>
 $('#rupiah1').trigger('focus');
 $(document).ready(function() {
@@ -966,9 +1056,13 @@ $(document).ready(function() {
         hitungDiskonPajakTotal();
     });
 });
-$("#bayarMidtrans").click(function(){
+    $("#bayarMidtrans").click(function(){
 
     console.log("Tombol Bayar Midtrans diklik");
+
+    console.log("ORDER :", $("#no_bon").val());
+    console.log("TOTAL :", $("#GrandTotal").val());
+    console.log("NAMA  :", $("#atas_nama").val());
 
     $.ajax({
 

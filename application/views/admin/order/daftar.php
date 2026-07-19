@@ -156,22 +156,25 @@ $(document).ready(function() {
                 'data': 'created_at'
             },
             {
-                "data": "pesanan",
-                "render": function(data, type, row, meta) {
-                    if (row.pesanan == 'Dine in') {
-                        return '<span class="badge badge-primary"><i class="fa fa-cutlery"> </i> ' +
-                            row.pesanan + '</span>';
-                    }
-                    if (row.pesanan == 'Take away') {
-                        return '<span class="badge badge-warning"><i class="fa fa-home"> </i> ' +
-                            row.pesanan + '</span>';
-                    }
-                    if (row.pesanan == 'Delivery') {
-                        return '<span class="badge badge-info"><i class="fa fa-motorcycle"> </i> ' +
-                            row.pesanan + '</span>';
-                    }
-                }
+                 "data": "pesanan",
+                 "render": function(data, type, row, meta) {
+
+                if (row.pesanan == 'Dine In') {
+                return '<span class="badge badge-primary"><i class="fa fa-cutlery"></i> Dine In</span>';
+                 }
+
+                 if (row.pesanan == 'Take Away') {
+                 return '<span class="badge badge-warning"><i class="fa fa-shopping-bag"></i> Take Away</span>';
+                 }
+
+                 if (row.pesanan == 'Delivery') {
+                 return '<span class="badge badge-info"><i class="fa fa-motorcycle"></i> Delivery</span>';
+            }
+
+             return row.pesanan ?? '-';
+            }
             },
+
             {
                 "data": "metode",
                 "render": function(data, type, row, meta) {

@@ -9,7 +9,7 @@
         if (!empty($this->session->flashdata('failed'))) {
             echo alert_failed($this->session->flashdata('failed'));
         }
-        if (!empty(in_array($t->metode, ['Tunai', 'Non tunai']))) {
+        if ($t->status_pembayaran == 'Lunas') {
             ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -63,7 +63,7 @@
                                         <td scope="row">Metode Pembayaran</td>
                                         <td>
                                             <?php
-                                            if ($t->metode == 'Bayar Nanti') {
+                                            if ($t->status_pembayaran == 'Belum Lunas') {
                                                 echo '<span class="text-danger">
                                                             <i class="fa fa-info-circle"> </i> ' . $t->metode . '</span>';
                                             } else {
@@ -155,7 +155,7 @@
                                                     <?= number_format($item['harga'] * $item['qty']); ?>,-
                                                 </td>
                                                 <td>
-                                                    <?php if (!empty(in_array($t->metode, ['Tunai', 'Non tunai']))) {
+                                                    <?php if ($t->status_pembayaran == 'Lunas') { 
                                                     } else { ?>
                                                         <a href="<?= base_url('order/hapus_item?id=' . $item['id'] . '&order_id=' . $t->id); ?>"
                                                             class="btn btn-danger btn-md"
@@ -314,7 +314,7 @@ Kembali : <?= getRupiah($t->dibayar - $grd); ?>" data-toggle="modal" data-target
                     </div>
                 </div>
                 </div>
-                <?php if ($t->metode == 'Bayar Nanti') { ?>
+                <?php if ($t->status_pembayaran == 'Belum Lunas') { ?>
                     <div class="col-md-8">
                         <div class="card card-rounded mt-5">
                             <div class="card-header bg-success text-white">

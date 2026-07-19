@@ -83,7 +83,7 @@ class Order extends CI_Controller
                     $where['pesanan'] = 'Delivery';
                     $where['date'] = $tgl;
                 } elseif ($jn == 4) {
-                    $where['metode'] = 'Bayar Nanti';
+                    $where['status_pembayaran'] = 'Belum Lunas';
                 }
             } else {
                 $where['date'] = $tgl;
@@ -132,7 +132,7 @@ class Order extends CI_Controller
     {
         $id = $this->input->post('id_order');
         $this->db->where('id', $id);
-        $this->db->update('transaksi', ['metode' => 'Bayar Nanti']);
+        $this->db->update('transaksi', ['status_pembayaran' => 'Belum Lunas']);
         $this->session->set_flashdata("success", " Berhasil Update Orderan ( Status Bayar Nanti ) ! ");
         redirect(base_url("order/edit/".(int)$id));
     }
@@ -195,6 +195,8 @@ class Order extends CI_Controller
             $data_trx = array(
                 'pesanan' => xss_protect($this->input->post("pesanan", true)),
                 'metode' => xss_protect($this->input->post("metode", true)),
+                'status_pembayaran' =>(xss_protect($this->input->post("metode", true)) == 'Tunai'&& $dibayar >= $grandtotal) ? 'Lunas': 'Belum Lunas',
+                'diskon' => xss_protect($this->input->post("diskon", true)),
                 'diskon' => xss_protect($this->input->post("diskon", true)),
                 'pajak' => xss_protect($this->input->post("pajak", true)),
                 'voucher' => $voucher,
@@ -217,6 +219,9 @@ class Order extends CI_Controller
                 )
             ) {
                 if ($dibayar < $grandtotal) {
+    $data_trx = array(
+        'status_pembayaran' => 'Belum Lunas'
+    );
                     $data_trx = array('metode' => 'Bayar Nanti');
                     $this->db->where('id', (int) $id);
                     $this->db->update('transaksi', $data_trx);
@@ -235,6 +240,14 @@ class Order extends CI_Controller
             $data_trx = array(
                 'pesanan' => xss_protect($this->input->post("pesanan", true)),
                 'metode' => xss_protect($this->input->post("metode", true)),
+                'status_pembayaran' =>
+(
+    xss_protect($this->input->post("metode", true)) == 'Tunai'
+    && $dibayar >= $grandtotal
+)
+? 'Lunas'
+: 'Belum Lunas',
+'diskon' => xss_protect($this->input->post("diskon", true)),
                 'diskon' => xss_protect($this->input->post("diskon", true)),
                 'pajak' => xss_protect($this->input->post("pajak", true)),
                 'voucher' => $voucher,
@@ -251,6 +264,9 @@ class Order extends CI_Controller
                 )
             ) {
                 if ($dibayar < $grandtotal) {
+    $data_trx = array(
+        'status_pembayaran' => 'Belum Lunas'
+    );
                     $data_trx = array('metode' => 'Bayar Nanti');
                     $this->db->where('id', (int) $id);
                     $this->db->update('transaksi', $data_trx);

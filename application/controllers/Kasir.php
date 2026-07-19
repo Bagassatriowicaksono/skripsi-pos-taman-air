@@ -77,14 +77,21 @@ class Kasir extends CI_Controller
             $dibayar = 0;
         }
 
-        $metode = xss_protect($this->input->post("metode", true));
+        $metode  = xss_protect($this->input->post("metode", true));
+        $pesanan = xss_protect($this->input->post("pesanan", true));
 
-        if ($metode == 'Tunai') {
-        if ($dibayar < $grandtotal) {
-        echo 'Kurang';
-        exit;
-    }
+        if ($pesanan != 'Bayar Nanti' && $metode == 'Tunai') {
+         if ($dibayar < $grandtotal) {
+            echo 'Kurang';
+         exit;
+   }   
 }
+
+        $status_pembayaran = 'Lunas';
+
+        if (xss_protect($this->input->post("pesanan", true)) == 'Bayar Nanti') {
+            $status_pembayaran = 'Belum Lunas';
+        }
 
         $hasil_cart = $this->db->get_where('keranjang', ['login_id' => $this->session->userdata('ses_id')])->result_array();
         $total_qty = 0;
@@ -125,6 +132,7 @@ class Kasir extends CI_Controller
             'atas_nama'     => xss_protect($this->input->post("atas_nama", true)),
             'pesanan'       => xss_protect($this->input->post("pesanan", true)),
             'metode'        => xss_protect($this->input->post("metode", true)),
+            'status_pembayaran' => $status_pembayaran,
             'diskon'        => xss_protect($this->input->post("diskon", true)),
             'pajak'         => xss_protect($this->input->post("pajak", true)),
             'voucher'       => $voucher,

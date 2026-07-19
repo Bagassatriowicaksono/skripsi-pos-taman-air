@@ -156,24 +156,28 @@ $(document).ready(function() {
                 'data': 'created_at'
             },
             {
-                 "data": "pesanan",
-                 "render": function(data, type, row, meta) {
+                "data": "pesanan",
+                "render": function(data, type, row, meta) {
 
-                if (row.pesanan == 'Dine In') {
-                return '<span class="badge badge-primary"><i class="fa fa-cutlery"></i> Dine In</span>';
-                 }
+                    if (row.pesanan == 'Dine In') {
+                        return '<span class="badge badge-primary"><i class="fa fa-cutlery"></i> Dine In</span>';
+                    }
 
-                 if (row.pesanan == 'Take Away') {
-                 return '<span class="badge badge-warning"><i class="fa fa-shopping-bag"></i> Take Away</span>';
-                 }
+                    if (row.pesanan == 'Take Away') {
+                        return '<span class="badge badge-warning"><i class="fa fa-shopping-bag"></i> Take Away</span>';
+                    }
 
-                 if (row.pesanan == 'Delivery') {
-                 return '<span class="badge badge-info"><i class="fa fa-motorcycle"></i> Delivery</span>';
-            }
+                    if (row.pesanan == 'Delivery') {
+                        return '<span class="badge badge-info"><i class="fa fa-motorcycle"></i> Delivery</span>';
+                    }
 
-             return row.pesanan ?? '-';
-            }
-            },
+                    if (row.pesanan == 'Bayar Nanti') {
+                        return '<span class="badge badge-danger"><i class="fa fa-clock-o"></i> Bayar Nanti</span>';
+                    }
+
+                    return row.pesanan || '-';
+                }
+            },  
 
             {
                 "data": "metode",

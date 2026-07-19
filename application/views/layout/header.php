@@ -226,7 +226,7 @@
                             // Hari Ini
                             $day    = $this->db->query('SELECT no_bon FROM transaksi WHERE date = ?', [date('Y-m-d')])->num_rows();
                             // Bayar Nanti
-                            $co     = $this->db->query('SELECT no_bon FROM transaksi WHERE metode = ?', ['Bayar Nanti'])->num_rows();
+                            $co = $this->db->query('SELECT no_bon FROM transaksi WHERE status_pembayaran = ? AND date = ?',['Belum Lunas', date('Y-m-d')])->num_rows();
                             // Ditempat
                             $cdo    = $this->db->query('SELECT no_bon FROM transaksi WHERE pesanan = ? AND date = ?', ['Dine In', date('Y-m-d')])->num_rows();
                             // Booking
@@ -234,10 +234,10 @@
                             // Delivery
                             $clo    = $this->db->query('SELECT no_bon FROM transaksi WHERE pesanan = ? AND date = ?', ['Delivery', date('Y-m-d')])->num_rows();
                         ?>
-                        <div class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-toggle="dropdown"
-                                aria-haspopup="true" aria-expanded="false"><i class="fas fa-receipt fa-lg ml-1"></i> PESANAN
-                                <span class="badge badge-danger"><?= $co;?></span></a>
+                            <div class="nav-item dropdown">
+                              <a class="nav-link dropdown-toggle" href="#" id="dropdownId" data-toggle="dropdown"
+                                 aria-haspopup="true" aria-expanded="false"><i class="fas fa-receipt fa-lg ml-1"></i> PESANAN
+                                </a>
                             <div class="dropdown-menu " aria-labelledby="dropdownId">
                                 <!--<a class="dropdown-item" href="#">CEK ORDER</a>
                                 <div class="dropdown-divider"></div>-->

@@ -464,9 +464,10 @@
                                         <td>
                                             <select class="form-control" required name="pesanan" id="pesanan">
                                             <option value="" disabled selected>- Jenis Pesanan -</option>
-                                             <option value="Dine In">Dine In</option>
-                                             <option value="Take Away">Take Away</option>
+                                            <option value="Dine In">Dine In</option>
+                                            <option value="Take Away">Take Away</option>
                                             <option value="Delivery">Delivery</option>
+                                            <option value="Bayar Nanti">Bayar Nanti</option>
                 </select>
                                         </td>
                                     </tr>

@@ -61,24 +61,20 @@
                                 <th>Tanggal</th>
                                 <th>Jenis Pesanan</th>
                                 <th>Metode</th>
+                                <th>Status</th>
                                 <th>Qty</th>
-                                
                                 <th>Grand Total</th>
+                                
                                 <!-- <th>Aksi</th> -->
                             </tr>
                         </thead>
                         <tbody></tbody>
                         <tfoot>
-                            <tr>
-                                <th colspan="8">Total</th>
-                                <th>
-                                    <?= $total->qty; ?>
-                                </th>
-                                
-                                <th colspan="1">Rp
-                                    <?= number_format($total->gr ?? 0); ?>,-
-                                </th>
-                            </tr>
+                        <tr>
+                            <th colspan="9">Total</th>
+                            <th><?= $total->qty; ?></th>
+                            <th>Rp <?= number_format($total->gr ?? 0); ?>,-</th>
+                        </tr>
                         </tfoot>
                     </table>
                 </div>
@@ -185,10 +181,10 @@ if (!empty($this->input->get('a'))) {
                 [10, 25, 50, 100, 150]
             ], // Combobox Limit
             "columns": [{
-                "data": 'id',
-                "sortable": false,
-                render: function (data, type, row, meta) {
-                    return meta.row + meta.settings._iDisplayStart + 1;
+        "data": 'id',
+        "sortable": false,
+        render: function (data, type, row, meta) {
+            return meta.row + meta.settings._iDisplayStart + 1;
                 }
             },
             {
@@ -198,17 +194,10 @@ if (!empty($this->input->get('a'))) {
                 'data': 'atas_nama'
             },
             {
-                "data": "nama",
-                "render": function (data, type, row, meta) {
-                    if (row.customer_id == 0) {
-                        return '-';
-                    } else {
-                        return row.nama;
-                    }
-                }
+                'data': 'nama' // Customer
             },
             {
-                'data': 'nama_user'
+                'data': 'nama_user' // Kasir
             },
             {
                 'data': 'created_at'
@@ -216,47 +205,71 @@ if (!empty($this->input->get('a'))) {
             {
                 "data": "pesanan",
                 "render": function (data, type, row, meta) {
+
                     if (row.pesanan == 'Dine in') {
-                        return '<span class="badge badge-primary"><i class="fa fa-cutlery"> </i> ' +
+                        return '<span class="badge badge-primary"><i class="fa fa-cutlery"></i> ' +
                             row.pesanan +
                             '</span>';
                     }
+
                     if (row.pesanan == 'Take away') {
-                        return '<span class="badge badge-warning"><i class="fa fa-home"> </i> ' +
+                        return '<span class="badge badge-warning"><i class="fa fa-home"></i> ' +
                             row.pesanan +
                             '</span>';
                     }
+
                     if (row.pesanan == 'Delivery') {
-                        return '<span class="badge badge-info"><i class="fa fa-motorcycle"> </i> ' +
+                        return '<span class="badge badge-info"><i class="fa fa-motorcycle"></i> ' +
                             row.pesanan +
                             '</span>';
                     }
+
                 }
             },
             {
                 "data": "metode",
                 "render": function (data, type, row, meta) {
+
                     if (row.metode == 'Bayar Nanti') {
-                        return '<span class="badge badge-danger"><i class="fa fa-info-circle"> </i> ' +
+
+                        return '<span class="badge badge-danger"><i class="fa fa-info-circle"></i> ' +
                             row.metode +
                             '</span>';
+
                     } else {
-                        return '<span class="badge badge-success"><i class="fa fa-check"> </i> ' +
+
+                        return '<span class="badge badge-success"><i class="fa fa-check"></i> ' +
                             row.metode +
                             '</span>';
+
                     }
+
+                }
+            },
+            {
+                "data": "status_pembayaran",
+                "render": function (data, type, row, meta) {
+
+                    if (data == "Lunas") {
+
+                        return '<span class="badge badge-success"><i class="fa fa-check"></i> Lunas</span>';
+
+                    } else {
+
+                        return '<span class="badge badge-danger"><i class="fa fa-times"></i> Belum Lunas</span>';
+
+                    }
+
                 }
             },
             {
                 'data': 'total_qty'
             },
-              
             {
-                data: 'grandtotal',
+                'data': 'grandtotal',
                 render: $.fn.dataTable.render.number(',', '.', 0, 'Rp')
-            },
-            
-            ],
+            }
+        ],
             "fnDrawCallback": function () {
                 $('.portfolio-popup').magnificPopup({
                     type: 'image',

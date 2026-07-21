@@ -48,7 +48,7 @@ class Laporan extends CI_Controller
         }
 
         // $total = $this->db->query('SELECT SUM(grandtotal) as gr, SUM(grandmodal) as gm, SUM(total_qty) as qty FROM transaksi' . $iswhere)->row();
-        $total = $this->db->query('SELECT SUM(grandtotal) as gr, SUM(total_qty) as qty FROM transaksi' . $iswhere)->row();
+        $total = $this->db->query('SELECT SUM(transaksi_produk.harga * transaksi_produk.qty) as h, SUM(transaksi_produk.qty) as qty FROM transaksi_produk JOIN transaksi ON transaksi_produk.no_bon = transaksi.no_bon ' . $iswhere)->row();
 
         $data = [
             'title_web' => 'Laporan Penjualan',
@@ -241,10 +241,7 @@ class Laporan extends CI_Controller
         //                             transaksi.kasir_id  FROM transaksi_produk 
         //                             JOIN transaksi ON transaksi_produk.no_bon=transaksi.no_bon ' . $iswhere)->row();
 
-        $total = $this->db->query('SELECT SUM(transaksi_produk.harga* qty) as h, 
-                                    SUM(transaksi_produk.qty) as qty,
-                                    transaksi.kasir_id  FROM transaksi_produk 
-                                    JOIN transaksi ON transaksi_produk.no_bon=transaksi.no_bon ' . $iswhere)->row();
+       $total = $this->db->query(' SELECT SUM(transaksi_produk.harga * transaksi_produk.qty) AS h, SUM(transaksi_produk.qty) AS qty FROM transaksi_produk JOIN transaksi ON transaksi_produk.no_bon = transaksi.no_bon' . $iswhere)->row();
 
 
         $data = [

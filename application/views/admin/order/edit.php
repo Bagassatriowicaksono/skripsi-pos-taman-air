@@ -255,6 +255,13 @@
                                 </button>
                             <?php } ?>
 
+                            <?php if($t->metode == 'Bayar Nanti'){ ?>
+                               <button
+                                    type="button"class="btn btn-primary btn-md mb-2 action-btn"data-toggle="modal"data-target="#modalBayar">
+                                    <i class="fa fa-money"></i> Bayar
+                                </button>
+                            <?php } ?>
+
                             <!-- Button trigger modal -->
                             <button type="button" class="btn btn-green mb-2" id="wabutton" data-phone="<?= $t->hp; ?>"
                                 data-text="
@@ -678,7 +685,8 @@ Kembali : <?= getRupiah($t->dibayar - $grd); ?>" data-toggle="modal" data-target
                 });
             });
         });
-    </script>
+</script>
+
     <script>
         $(document).ready(function () {
             $('#Diskon').bind("keyup change", function () {
@@ -727,11 +735,11 @@ Kembali : <?= getRupiah($t->dibayar - $grd); ?>" data-toggle="modal" data-target
         }
 
         function hitungDiskon() {
-            var hargaTot1 = $("#totalBayar1").val();
-            var hargaTot = $("#totalBayar").val();
+            var hargaTot1 = $("#totalBayar1").val() || "0";
+            var hargaTot = $("#totalBayar").val() || "0";
             var diskon = parseInt($("#Diskon").val());
             var pajak = parseInt($('#Pajak').val());
-            var voucher = $('#rupiah').val();
+            var voucher = $("#rupiah").val() || "0";
 
             var HrgTot1 = hargaTot1.replace(/\D/g, '');
             var HrgTot = hargaTot.replace(/\D/g, '');
@@ -951,6 +959,243 @@ Kembali : <?= getRupiah($t->dibayar - $grd); ?>" data-toggle="modal" data-target
                         alert("request timeout");
                     }
                 }
-            });
+             });
         });
     </script>
+
+    <script>
+    $(document).ready(function(){
+
+    function formatRupiah(angka){
+
+        angka = angka.replace(/[^,\d]/g,'');
+
+        var split = angka.split(',');
+
+        var sisa = split[0].length % 3;
+
+        var rupiah = split[0].substr(0,sisa);
+
+        var ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if(ribuan){
+
+            var separator = sisa ? '.' : '';
+
+            rupiah += separator + ribuan.join('.');
+
+        }
+
+        return rupiah;
+
+    }
+
+    $("#dibayar").on("keyup",function(){
+
+        var angka = $(this).val().replace(/\./g,'');
+
+        $(this).val(formatRupiah(angka));
+
+        var bayar = parseInt(angka) || 0;
+
+        var total = <?= $t->grandtotal;?>;
+
+        var kembali = bayar-total;
+
+        if(kembali < 0){
+
+            $("#kembali").val(
+                "Kurang Rp " +
+                formatRupiah(Math.abs(kembali).toString())
+            );
+
+        }else{
+
+            $("#kembali").val(
+                "Rp " +
+                formatRupiah(kembali.toString())
+            );
+
+        }
+
+    });
+
+    $("#btnBayar").click(function(){
+
+        var metode = $("select[name='metode']").val();
+
+        if(metode == "Tunai"){
+
+            $(this).closest("form").submit();
+
+        }else{
+
+            $.ajax({
+
+                url : "<?= base_url('kasir/snapToken')?>",
+
+                type : "POST",
+
+                data : {
+
+                    atas_nama : "<?= $t->atas_nama;?>",
+
+                    grandtotal : "<?= $t->grandtotal;?>"
+
+                },
+
+                dataType : "json",
+
+                success:function(res){
+
+    snap.pay(res.token,{
+
+        onSuccess:function(result){
+
+            $.post("<?= base_url('order/pelunasan_midtrans')?>",{
+
+                id : "<?= $t->id;?>"
+
+            },function(){
+
+                alert("Pembayaran berhasil");
+
+                location.reload();
+
+            });
+
+        },
+
+        onPending:function(result){
+
+            alert("Pembayaran masih pending");
+
+        },
+
+        onError:function(result){
+
+            alert("Pembayaran gagal");
+
+        },
+
+        onClose:function(){
+
+            alert("Popup Midtrans ditutup.");
+
+        }
+
+    });
+
+}
+
+            });
+
+        }
+
+    });
+
+});
+</script>       
+
+<div class="modal fade" id="modalBayar">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header bg-success text-white">
+                <h5>Pembayaran Pesanan</h5>
+            </div>
+
+            <form action="<?=base_url('order/pelunasan')?>"
+                  method="post">
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                           name="id"
+                           value="<?=$t->id;?>">
+
+                    <div class="form-group">
+
+                        <label>Metode Pembayaran</label>
+
+                        <select
+                        class="form-control"
+                        name="metode"
+                        required>
+
+                            <option value="">Pilih</option>
+
+                            <option value="Tunai">
+                                Tunai
+                            </option>
+
+                            <option value="Non tunai">
+                                Non Tunai
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Total Bayar</label>
+
+                        <input
+                        class="form-control"
+                        readonly
+                        id="grandtotal"
+                        value="<?=$t->grandtotal;?>">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Jumlah Dibayar</label>
+
+                        <input
+                        type="text"
+                        class="form-control"
+                        id="dibayar"
+                        name="dibayar"
+                        autocomplete="off"
+                        required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Kembalian</label>
+
+                        <input
+                        type="text"
+                        class="form-control"
+                        id="kembali"
+                        readonly>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                    class="btn btn-secondary"
+                    data-dismiss="modal">
+                    Batal
+                    </button>
+
+                    <button
+                    type="button"
+                    id="btnBayar"
+                    class="btn btn-success">
+                    Selesaikan Pembayaran
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

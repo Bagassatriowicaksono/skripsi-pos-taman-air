@@ -83,7 +83,7 @@ class Order extends CI_Controller
                     $where['pesanan'] = 'Delivery';
                     $where['date'] = $tgl;
                 } elseif ($jn == 4) {
-                    $where['status_pembayaran'] = 'Belum Lunas';
+                    $where['metode'] = 'Bayar Nanti';
                 }
             } else {
                 $where['date'] = $tgl;
@@ -327,6 +327,42 @@ class Order extends CI_Controller
         }
     }
 
+    public function pelunasan()
+    {
+    $id      = $this->input->post('id');
+    $metode  = $this->input->post('metode');
+    $dibayar = str_replace('.', '', $this->input->post('dibayar'));
+    $dibayar = (int)$dibayar;
+
+    // Ambil data transaksi
+    $trx = $this->db->get_where('transaksi', ['id' => $id])->row();
+
+    if (!$trx) {
+        $this->session->set_flashdata('failed', 'Data transaksi tidak ditemukan!');
+        redirect('order');
+    }
+
+    // Validasi pembayaran
+    if ($dibayar < $trx->grandtotal) {
+        $this->session->set_flashdata('failed', 'Jumlah pembayaran kurang dari total tagihan!');
+        redirect('order/edit/'.$id);
+    }
+
+    // Hitung kembalian
+    $kembali = $dibayar - $trx->grandtotal;
+
+    // Update transaksi
+    $this->db->where('id', $id);
+    $this->db->update('transaksi', [
+        'metode' => $metode,
+        'status_pembayaran' => 'Lunas',
+        'dibayar' => $dibayar,
+    ]);
+
+    $this->session->set_flashdata('success', 'Pembayaran berhasil diselesaikan!');
+    redirect('order/edit/'.$id);
+    }
+
     public function update_cart()
     {
         $id = (int) $this->input->get('id');
@@ -363,7 +399,31 @@ class Order extends CI_Controller
         }
     }
 
+public function pelunasan_midtrans()
+{
+    $id = $this->input->post('id');
 
+    $trx = $this->db->get_where('transaksi', ['id' => $id])->row();
+
+    if (!$trx) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Transaksi tidak ditemukan'
+        ]);
+        return;
+    }
+
+    $this->db->where('id', $id);
+    $this->db->update('transaksi', [
+        'metode'             => 'Non tunai',
+        'status_pembayaran'  => 'Lunas',
+        'dibayar'            => $trx->grandtotal
+    ]);
+
+    echo json_encode([
+        'status' => true
+    ]);
+}
 
 
     public function updateket_cart()

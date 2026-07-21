@@ -226,8 +226,7 @@
                             // Hari Ini
                             $day    = $this->db->query('SELECT no_bon FROM transaksi WHERE date = ?', [date('Y-m-d')])->num_rows();
                             // Bayar Nanti
-                            $co = $this->db->query('SELECT no_bon FROM transaksi WHERE status_pembayaran = ? AND date = ?',['Belum Lunas', date('Y-m-d')])->num_rows();
-                            // Ditempat
+                            $co = $this->db->query("SELECT no_bon FROM transaksi WHERE metode = ?", ['Bayar Nanti'])->num_rows();
                             $cdo    = $this->db->query('SELECT no_bon FROM transaksi WHERE pesanan = ? AND date = ?', ['Dine In', date('Y-m-d')])->num_rows();
                             // Booking
                             $cbo    = $this->db->query('SELECT no_bon FROM transaksi WHERE pesanan = ? AND date = ?', ['Take Away', date('Y-m-d')])->num_rows();
